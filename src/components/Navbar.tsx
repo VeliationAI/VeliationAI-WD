@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ const Navbar = () => {
     { name: "Home", href: "/" },
     { name: "Features", href: "/features" },
     { name: "Interview", href: "/interview" },
+    { name: "Job Search", href: "/job-search" },
     { name: "ETL Designer", href: "/etl-designer" },
     { name: "Subscription", href: "/subscription" },
   ];
