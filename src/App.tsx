@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Features from "./pages/Features";
 import Interview from "./pages/Interview";
 import ETLDesigner from "./pages/ETLDesigner";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/features" element={<Features />} />
           <Route path="/interview" element={<Interview />} />
           <Route path="/etl-designer" element={<ETLDesigner />} />
+          <Route path="/subscription" element={<Subscription />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

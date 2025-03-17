@@ -5,7 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InterviewSimulator from "@/components/InterviewSimulator";
 import ResumeGenerator from "@/components/ResumeGenerator";
 import EdTechFeatures from "@/components/EdTechFeatures";
-import { BrainIcon, FileTextIcon, BriefcaseIcon } from "lucide-react";
+import { BrainIcon, FileTextIcon, BriefcaseIcon, CrownIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Interview = () => {
   const [activeTab, setActiveTab] = useState("interview");
@@ -29,6 +32,17 @@ const Interview = () => {
             </p>
             <div className="h-1 w-20 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto mb-4"></div>
           </div>
+          
+          <Alert className="max-w-4xl mx-auto mb-8 bg-primary/5 border-primary/20">
+            <CrownIcon className="h-5 w-5 text-primary" />
+            <AlertTitle>Upgrade to Premium</AlertTitle>
+            <AlertDescription className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span>Get access to advanced interview simulations, facial expression analysis, and more.</span>
+              <Button asChild className="whitespace-nowrap">
+                <Link to="/subscription">View Plans</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
           
           <div className="max-w-5xl mx-auto glass-card p-2 shadow-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/20 dark:border-gray-700/20 rounded-xl">
             <Tabs 

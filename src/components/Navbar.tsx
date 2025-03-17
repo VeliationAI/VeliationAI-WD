@@ -1,115 +1,136 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Menu, X, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import useMobile from "@/hooks/use-mobile";
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  
-  const navigation = [
+  const isMobile = useMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const navLinks = [
     { name: "Home", href: "/" },
     { name: "Features", href: "/features" },
     { name: "Interview", href: "/interview" },
+    { name: "ETL Designer", href: "/etl-designer" },
+    { name: "Subscription", href: "/subscription" },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-  
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
-
-  return (
-    <nav
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled 
-          ? "glass py-3" 
-          : "bg-transparent py-6"
-      )}
-    >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-10">
-          <Link
-            to="/"
-            className="flex items-center space-x-2"
-          >
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">AI</span>
-            </div>
-            <span className="font-semibold text-xl hidden sm:inline-block">
-              InterviewPro
-            </span>
+  const mobileMenu = (
+    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
+      <div className="container h-full flex flex-col">
+        <div className="flex items-center justify-between py-4">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-semibold text-xl">Veliation AI</span>
           </Link>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "relative font-medium transition-colors",
-                  location.pathname === item.href
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground",
-                  "after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-primary after:transition-all",
-                  location.pathname === item.href && "after:w-full"
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-          
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          <Button size="icon" variant="ghost" onClick={toggleMenu}>
+            <X className="h-6 w-6" aria-hidden="true" />
+          </Button>
         </div>
-      </div>
-      
-      {/* Mobile menu */}
-      <div
-        className={cn(
-          "md:hidden glass mt-3 overflow-hidden transition-all duration-300 ease-in-out",
-          isMobileMenuOpen ? "max-h-60" : "max-h-0"
-        )}
-      >
-        <div className="px-4 py-2 space-y-1">
-          {navigation.map((item) => (
+        <div className="flex flex-col gap-4 py-8">
+          {navLinks.map((link) => (
             <Link
-              key={item.name}
-              to={item.href}
-              className={cn(
-                "block px-3 py-3 rounded-md font-medium transition-colors",
-                location.pathname === item.href
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-primary/5"
-              )}
+              key={link.name}
+              to={link.href}
+              className={`text-xl py-2 ${
+                location.pathname === link.href
+                  ? "font-semibold text-primary"
+                  : "text-muted-foreground"
+              }`}
+              onClick={toggleMenu}
             >
-              {item.name}
+              {link.name}
             </Link>
           ))}
         </div>
+        <div className="mt-auto py-8 flex flex-col gap-4">
+          <Button className="w-full">Get Started</Button>
+          <div className="flex justify-center">
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
-    </nav>
+    </div>
+  );
+
+  return (
+    <header className="fixed top-0 w-full z-40 bg-background/80 backdrop-blur-sm border-b">
+      <div className="container py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-2">
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-bold text-xl">Veliation AI</span>
+            </Link>
+            {!isMobile && (
+              <nav className="hidden md:flex gap-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`text-sm font-medium ${
+                      location.pathname === link.href
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground focus:outline-none">
+                    Resources <ChevronDown className="ml-1 h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Documentation</DropdownMenuItem>
+                    <DropdownMenuItem>Blog</DropdownMenuItem>
+                    <DropdownMenuItem>Tutorials</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </nav>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            {!isMobile ? (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/subscription">View Plans</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/interview">Get Started</Link>
+                </Button>
+                <ThemeToggle />
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  onClick={toggleMenu}
+                >
+                  <Menu className="h-6 w-6" />
+                </Button>
+                <ThemeToggle />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {isMobile && isMenuOpen && mobileMenu}
+    </header>
   );
 };
 
