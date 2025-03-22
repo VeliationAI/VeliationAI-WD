@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { 
   Briefcase, MapPin, Clock, Building, Filter, Search, Zap, 
-  Linkedin, Sparkles, Star, ChevronRight, Upload, CircleCheck,
+  Linkedin, Sparkles, Star, ChevronRight, Upload, CheckCircle2 as CheckCircle, 
   AlertTriangle, FileCheck, PanelLeft, Loader2, RefreshCw, 
   Globe, IndianRupee, DollarSign 
 } from "lucide-react";
