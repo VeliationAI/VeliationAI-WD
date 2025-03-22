@@ -9,14 +9,21 @@ export const generateResumePDF = (resumeContent: string): Blob => {
   // Parse content into sections
   const sections = parseResumeContent(resumeContent);
   
-  // Generate structured content with proper spacing
+  // Format PDF content with proper line breaks and section spacing
   let formattedContent = '';
-  Object.entries(sections).forEach(([title, content]) => {
-    formattedContent += `\\n\\n${title.toUpperCase()}\\n`;
-    formattedContent += `${'='.repeat(title.length)}\\n`;
-    formattedContent += `${content.replace(/\n/g, '\\n')}\\n`;
+  Object.entries(sections).forEach(([title, content], index) => {
+    // Add extra spacing between sections
+    if (index > 0) formattedContent += '\\n\\n';
+    
+    // Format section title with proper styling
+    formattedContent += `${title.toUpperCase()}\\n`;
+    formattedContent += `${'='.repeat(title.length)}\\n\\n`;
+    
+    // Format section content with line breaks preserved
+    formattedContent += `${content.replace(/\n/g, '\\n')}`;
   });
   
+  // Create PDF content with proper text positioning and fonts
   const pdfContent = `
 1 0 obj
 <<
@@ -39,10 +46,11 @@ endobj
 /Font <<
 /F1 4 0 R
 /F2 5 0 R
+/F3 6 0 R
 >>
 >>
 /MediaBox [0 0 612 792]
-/Contents 6 0 R
+/Contents 7 0 R
 >>
 endobj
 4 0 obj
@@ -61,32 +69,45 @@ endobj
 endobj
 6 0 obj
 <<
-/Length 1024
+/Type /Font
+/Subtype /Type1
+/BaseFont /Courier
+>>
+endobj
+7 0 obj
+<<
+/Length 2048
 >>
 stream
 BT
-/F2 10 Tf
+/F1 16 Tf
 72 720 Td
+12 TL
+(RESUME) Tj
+T*
+T*
+/F2 10 Tf
 (${formattedContent}) Tj
 ET
 endstream
 endobj
 xref
-0 7
+0 8
 0000000000 65535 f
 0000000009 00000 n
 0000000058 00000 n
 0000000115 00000 n
-0000000234 00000 n
-0000000302 00000 n
-0000000370 00000 n
+0000000256 00000 n
+0000000324 00000 n
+0000000391 00000 n
+0000000457 00000 n
 trailer
 <<
-/Size 7
+/Size 8
 /Root 1 0 R
 >>
 startxref
-1446
+2557
 %%EOF
   `;
   
@@ -117,12 +138,14 @@ const parseResumeContent = (content: string): Record<string, string> => {
     const isPossibleHeader = line.trim().length < 30 && 
                             (line === line.toUpperCase() || 
                              line.endsWith(':') ||
-                             line.startsWith('#'));
+                             line.startsWith('#') ||
+                             /^[A-Z\s]+$/.test(line.trim()) || // All uppercase words
+                             /^[A-Z][a-z]+(\s+[A-Z][a-z]+)*$/.test(line.trim())); // Title Case
     
     if (isPossibleHeader) {
       // Normalize the header text
       const headerText = line.toLowerCase()
-                            .replace(/[:#]/g, '')
+                            .replace(/[:#=]/g, '')
                             .trim();
       
       // Check if this matches any of our predefined sections
