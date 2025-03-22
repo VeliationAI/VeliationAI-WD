@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import JobPortal from "@/components/JobPortal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CrownIcon } from "lucide-react";
@@ -9,13 +10,13 @@ import { Link } from "react-router-dom";
 
 const JobSearch = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       <Navbar />
       
-      <section className="pt-36 pb-16">
+      <section className="pt-36 pb-16 flex-grow">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 border border-indigo-200 text-sm text-indigo-700 mb-6 animate-fade-in">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 border border-indigo-200 text-sm text-indigo-700 mb-6 animate-fade-in dark:bg-indigo-900/20 dark:border-indigo-800 dark:text-indigo-400">
               <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-2"></span>
               AI-Powered Job Search
             </div>
@@ -44,6 +45,8 @@ const JobSearch = () => {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 };

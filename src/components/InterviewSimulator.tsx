@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { sampleQuestions, QuestionType } from "@/lib/interview-data";
 import { Card } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, CheckCircle, Clock, BarChart, Send, Pause, Play, RefreshCw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { generateInterviewFeedback } from "@/services/interviewService";
+import { toast } from "@/hooks/use-toast";
 
 interface FeedbackType {
   strengths: string[];
@@ -62,35 +63,26 @@ const InterviewSimulator: React.FC = () => {
   };
   
   const submitAnswer = () => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || !activeQuestion) return;
     
     setIsLoading(true);
     
-    // Simulate AI processing time
-    setTimeout(() => {
-      generateFeedback();
-      setIsLoading(false);
-      setIsAnswering(false);
-    }, 1500);
-  };
-  
-  const generateFeedback = () => {
-    // This is a mock implementation - in reality, you would call your backend API
-    const mockFeedback: FeedbackType = {
-      strengths: [
-        "Good understanding of core concepts",
-        "Clear explanation of technical details",
-        "Well-structured response"
-      ],
-      improvements: [
-        "Could provide more specific examples",
-        "Consider mentioning alternative approaches",
-        "Elaborate on scalability considerations"
-      ],
-      score: Math.floor(Math.random() * 30) + 70 // Random score between 70-100
-    };
-    
-    setFeedback(mockFeedback);
+    // Use our interview service
+    generateInterviewFeedback(activeQuestion, answer)
+      .then(feedbackResult => {
+        setFeedback(feedbackResult);
+        setIsLoading(false);
+        setIsAnswering(false);
+      })
+      .catch(error => {
+        console.error("Error generating feedback:", error);
+        toast({
+          title: "Error generating feedback",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      });
   };
   
   const nextQuestion = () => {

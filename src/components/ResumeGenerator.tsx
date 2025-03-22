@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Button from "@/components/Button";
@@ -35,6 +34,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
+import { downloadResume } from "@/utils/pdfUtils";
 
 // Form schema
 const resumeFormSchema = z.object({
@@ -67,7 +67,29 @@ const ResumeGenerator: React.FC = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      setUploadedFile(files[0]);
+      const file = files[0];
+      // Check file type
+      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF or Word document (.pdf, .doc, .docx)",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload a file smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setUploadedFile(file);
       
       // Simulate upload progress
       setUploadProgress(0);
@@ -125,6 +147,17 @@ JavaScript, TypeScript, React, Node.js, Express, MongoDB, PostgreSQL, AWS, Docke
     setResumeContent(mockContent);
   };
 
+  const handleDownloadResume = () => {
+    if (resumeContent) {
+      downloadResume(resumeContent, "ai_optimized_resume.pdf");
+      
+      toast({
+        title: "Resume Downloaded",
+        description: "Your optimized resume has been downloaded successfully.",
+      });
+    }
+  };
+
   const onSubmit = (data: ResumeFormValues) => {
     setAnalysisStatus("analyzing");
     
@@ -160,6 +193,10 @@ JavaScript, TypeScript, React, Node.js, Express, MongoDB, PostgreSQL, AWS, Docke
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   accept=".pdf,.doc,.docx"
                   onChange={handleFileUpload}
+                  onClick={(e) => {
+                    // Reset the value to allow reuploading the same file
+                    (e.target as HTMLInputElement).value = '';
+                  }}
                 />
                 <Button variant="secondary" size="sm">
                   <FileUp className="mr-2 h-4 w-4" /> Browse Files
@@ -311,7 +348,7 @@ JavaScript, TypeScript, React, Node.js, Express, MongoDB, PostgreSQL, AWS, Docke
                 </div>
               )}
               
-              <Button size="sm">
+              <Button size="sm" onClick={handleDownloadResume}>
                 <FileText className="mr-2 h-4 w-4" /> Download PDF
               </Button>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -11,105 +10,46 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data for job listings
-const mockJobs = [
-  {
-    id: 1,
-    title: "Senior Full Stack Developer",
-    company: "TechNova Solutions",
-    location: "San Francisco, CA (Remote)",
-    type: "Full-time",
-    salary: "$120K - $150K",
-    posted: "2 days ago",
-    description: "We're looking for a senior full stack developer with expertise in React, Node.js, and cloud technologies to join our growing team.",
-    skills: ["React", "Node.js", "TypeScript", "AWS", "Docker"],
-    matched: 95,
-    applied: false,
-    logo: "https://picsum.photos/seed/technova/200/200",
-    companySize: "100-500 employees",
-    linkedinEasyApply: true
-  },
-  {
-    id: 2,
-    title: "Data Scientist",
-    company: "AnalyticsMind Inc.",
-    location: "New York, NY (Hybrid)",
-    type: "Full-time",
-    salary: "$110K - $140K",
-    posted: "1 week ago",
-    description: "Join our data science team to develop machine learning models and analytics solutions for our enterprise clients.",
-    skills: ["Python", "TensorFlow", "PyTorch", "SQL", "Data Visualization"],
-    matched: 87,
-    applied: false,
-    logo: "https://picsum.photos/seed/analytics/200/200",
-    companySize: "50-100 employees",
-    linkedinEasyApply: true
-  },
-  {
-    id: 3,
-    title: "UX/UI Designer",
-    company: "DesignFirst Creative",
-    location: "Austin, TX (On-site)",
-    type: "Contract",
-    salary: "$90K - $120K",
-    posted: "3 days ago",
-    description: "We are seeking a talented UX/UI designer to create stunning, user-friendly interfaces for our clients in the healthcare sector.",
-    skills: ["Figma", "Adobe XD", "User Research", "Prototyping", "Wireframing"],
-    matched: 78,
-    applied: false,
-    logo: "https://picsum.photos/seed/design/200/200",
-    companySize: "10-50 employees",
-    linkedinEasyApply: false
-  },
-  {
-    id: 4,
-    title: "DevOps Engineer",
-    company: "CloudScale Technologies",
-    location: "Boston, MA (Remote)",
-    type: "Full-time",
-    salary: "$115K - $145K",
-    posted: "5 days ago",
-    description: "Looking for a DevOps engineer to build and maintain our cloud infrastructure and CI/CD pipelines.",
-    skills: ["Kubernetes", "AWS", "Terraform", "Jenkins", "Docker"],
-    matched: 92,
-    applied: false,
-    logo: "https://picsum.photos/seed/cloudscale/200/200",
-    companySize: "100-500 employees",
-    linkedinEasyApply: true
-  },
-  {
-    id: 5,
-    title: "Machine Learning Engineer",
-    company: "AI Innovations",
-    location: "Seattle, WA (Remote)",
-    type: "Full-time",
-    salary: "$130K - $160K",
-    posted: "1 day ago",
-    description: "Join our team developing cutting-edge ML models for computer vision and natural language processing applications.",
-    skills: ["Python", "PyTorch", "TensorFlow", "Computer Vision", "NLP"],
-    matched: 91,
-    applied: false,
-    logo: "https://picsum.photos/seed/aiinnovations/200/200",
-    companySize: "50-100 employees",
-    linkedinEasyApply: true
-  }
-];
+import { getJobRecommendations, submitJobApplication, getAIRecommendations } from "@/services/jobService";
 
 const JobPortal = () => {
   const [activeTab, setActiveTab] = useState("search");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredJobs, setFilteredJobs] = useState(mockJobs);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [salaryRange, setSalaryRange] = useState([70, 160]);
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [easyApplyOnly, setEasyApplyOnly] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    let filtered = mockJobs.filter(job => {
-      // Search filter
-      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    // Load jobs data
+    setIsLoading(true);
+    getJobRecommendations()
+      .then(jobs => {
+        setFilteredJobs(jobs);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("Error fetching jobs:", error);
+        toast({
+          title: "Error fetching jobs",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      });
+  }, [toast]);
+
+  useEffect(() => {
+    // Filter jobs based on user criteria
+    if (filteredJobs.length > 0) {
+      let filtered = filteredJobs.filter(job => {
+        // Search filter
+        const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                            job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            job.description.toLowerCase().includes(searchTerm.toLowerCase());
                            
@@ -125,23 +65,70 @@ const JobPortal = () => {
       
       return matchesSearch && matchesRemote && matchesEasyApply && matchesSalary;
     });
-    
-    setFilteredJobs(filtered);
-  }, [searchTerm, remoteOnly, easyApplyOnly, salaryRange]);
+      
+      setFilteredJobs(filtered);
+    }
+  }, [searchTerm, remoteOnly, easyApplyOnly, salaryRange, filteredJobs]);
 
   const handleApply = (jobId: number) => {
-    const updatedJobs = filteredJobs.map(job => 
-      job.id === jobId ? { ...job, applied: true } : job
-    );
-    setFilteredJobs(updatedJobs);
-    
-    toast({
-      title: "Application Submitted!",
-      description: "Your application has been successfully submitted via LinkedIn Easy Apply.",
-    });
+    setIsLoading(true);
+    submitJobApplication(jobId)
+      .then(response => {
+        if (response.success) {
+          // Mark job as applied
+          const updatedJobs = filteredJobs.map(job => 
+            job.id === jobId ? { ...job, applied: true } : job
+          );
+          setFilteredJobs(updatedJobs);
+          
+          // Add to applied jobs
+          const appliedJob = filteredJobs.find(job => job.id === jobId);
+          if (appliedJob) {
+            setAppliedJobs(prev => [...prev, appliedJob]);
+          }
+          
+          toast({
+            title: "Application Submitted!",
+            description: "Your application has been successfully submitted via LinkedIn Easy Apply.",
+          });
+        }
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("Error submitting application:", error);
+        toast({
+          title: "Error submitting application",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      });
   };
 
-  const selectedJob = filteredJobs.find(job => job.id === selectedJobId);
+  const loadAIRecommendations = () => {
+    setIsLoading(true);
+    getAIRecommendations()
+      .then(recommendations => {
+        setAiRecommendations(recommendations);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("Error getting AI recommendations:", error);
+        toast({
+          title: "Error generating recommendations",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      });
+  };
+
+  // When switching to the recommendations tab, load AI recommendations
+  useEffect(() => {
+    if (activeTab === "recommended" && aiRecommendations.length === 0) {
+      loadAIRecommendations();
+    }
+  }, [activeTab, aiRecommendations.length]);
 
   return (
     <div className="glass-card rounded-xl p-6 shadow-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/20 dark:border-gray-700/20">
@@ -372,32 +359,82 @@ const JobPortal = () => {
             <h3 className="text-xl font-semibold mb-2">AI-Powered Job Recommendations</h3>
             <p className="text-muted-foreground mb-6">
               Our AI analyzes your resume and preferences to find the perfect match. 
-              <br />Upload your resume to get personalized recommendations.
             </p>
             
-            <div className="max-w-xl mx-auto bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 mb-8">
-              <div className="flex items-center justify-center mb-6">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-700 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
-                </div>
+            {aiRecommendations.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto">
+                {aiRecommendations.map((job) => (
+                  <Card 
+                    key={job.id} 
+                    className="p-5 border hover:shadow-md transition-all"
+                  >
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <img src={job.logo} alt={job.company} className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                      
+                      <div className="flex-grow space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{job.title}</h3>
+                            <p className="text-muted-foreground">{job.company} • {job.location}</p>
+                          </div>
+                          <Badge className="bg-primary/10 text-primary border-primary/20">
+                            {job.matched}% Match
+                          </Badge>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">AI Matching Factors:</p>
+                          <ul className="text-sm space-y-1 ml-4 list-disc">
+                            {job.reasonsForMatch.map((reason, idx) => (
+                              <li key={idx}>{reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            onClick={() => handleApply(job.id)}
+                            className={job.linkedinEasyApply ? "bg-[#0A66C2] hover:bg-[#0A66C2]/90" : ""}
+                            size="sm"
+                          >
+                            {job.linkedinEasyApply ? (
+                              <>
+                                <Linkedin className="h-4 w-4 mr-2" /> Easy Apply
+                              </>
+                            ) : (
+                              "Apply Now"
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-              <h4 className="text-lg font-medium mb-2">Resume Analysis</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                Upload your resume to let our AI match you with the best job opportunities
-                based on your skills, experience, and career goals.
-              </p>
-              <Button>Upload Resume</Button>
-            </div>
-            
-            <div className="border-t pt-6">
-              <p className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
-                <Star className="h-4 w-4 text-amber-500" />
-                Premium Feature
-              </p>
-              <Button variant="outline" asChild>
-                <Link to="/subscription">Upgrade to Get AI Recommendations</Link>
-              </Button>
-            </div>
+            ) : isLoading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="h-8 w-8 border-2 border-primary border-r-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-muted-foreground">Generating personalized recommendations...</p>
+              </div>
+            ) : (
+              <div className="max-w-xl mx-auto bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6 mb-8">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-700 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
+                  </div>
+                </div>
+                <h4 className="text-lg font-medium mb-2">Resume Analysis</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Upload your resume to let our AI match you with the best job opportunities
+                  based on your skills, experience, and career goals.
+                </p>
+                <Button onClick={loadAIRecommendations}>Get AI Recommendations</Button>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
