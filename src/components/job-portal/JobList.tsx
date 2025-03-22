@@ -48,17 +48,29 @@ const JobList: React.FC<JobListProps> = ({
   handleApply,
   resetFilters,
 }) => {
+  const handleClearSearch = () => {
+    setSearchTerm("");
+  };
+
   return (
     <div className="w-full md:w-3/4">
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input 
-            className="pl-10" 
+            className="pl-10 pr-16" 
             placeholder="Search job titles, companies, or keywords..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <button 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={handleClearSearch}
+            >
+              <span className="text-xs">Clear</span>
+            </button>
+          )}
         </div>
       </div>
       
@@ -163,9 +175,12 @@ const JobList: React.FC<JobListProps> = ({
             ))
           ) : (
             <div className="text-center py-10 border rounded-lg">
-              <p className="text-muted-foreground">No jobs matching your criteria found.</p>
-              <Button variant="outline" className="mt-4" onClick={resetFilters}>
-                <RefreshCw className="mr-2 h-4 w-4" /> Reset Filters
+              <p className="text-muted-foreground mb-4">No jobs matching your criteria found.</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Try adjusting your filters or search terms to see more results.
+              </p>
+              <Button variant="outline" className="mt-2" onClick={resetFilters}>
+                <RefreshCw className="mr-2 h-4 w-4" /> Reset All Filters
               </Button>
             </div>
           )}

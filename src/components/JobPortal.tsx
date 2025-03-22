@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Search, Briefcase, Sparkles, Loader2 } from "lucide-react";
@@ -37,7 +36,6 @@ const JobPortal = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load jobs data
     setIsLoading(true);
     getJobRecommendations()
       .then(jobs => {
@@ -61,7 +59,6 @@ const JobPortal = () => {
     
     let filtered = [...originalJobs];
     
-    // Search term filter
     if (searchTerm) {
       filtered = filtered.filter(job => 
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -70,7 +67,6 @@ const JobPortal = () => {
       );
     }
     
-    // Location filter
     if (selectedLocation !== "all") {
       filtered = filtered.filter(job => {
         if (selectedLocation === "remote") {
@@ -84,10 +80,8 @@ const JobPortal = () => {
       });
     }
     
-    // Experience level filter
     if (selectedExperience.length > 0) {
       filtered = filtered.filter(job => {
-        // This is a simplified example - in a real app, you'd have experience data on the job object
         const yearsRequired = parseInt(job.description.match(/(\d+)\+?\s*years?/i)?.[1] || "0", 10);
         
         return selectedExperience.some(level => {
@@ -100,26 +94,21 @@ const JobPortal = () => {
       });
     }
     
-    // Job type filter
     if (selectedJobTypes.length > 0) {
       filtered = filtered.filter(job => 
         selectedJobTypes.some(type => job.type.toLowerCase().includes(type.toLowerCase()))
       );
     }
     
-    // Remote filter
     if (remoteOnly) {
       filtered = filtered.filter(job => job.location.toLowerCase().includes("remote"));
     }
     
-    // LinkedIn Easy Apply filter
     if (easyApplyOnly) {
       filtered = filtered.filter(job => job.linkedinEasyApply);
     }
     
-    // Salary filter
     filtered = filtered.filter(job => {
-      // Parse salary range from format like "$120K - $150K"
       const salaryText = job.salary.replace(/[^0-9-]/g, '');
       const [minSalary, maxSalary] = salaryText.split('-').map(s => parseInt(s, 10));
       
@@ -129,7 +118,6 @@ const JobPortal = () => {
     setFilteredJobs(filtered);
   };
 
-  // Apply filters whenever filter criteria change
   useEffect(() => {
     applyFilters();
   }, [
@@ -142,19 +130,16 @@ const JobPortal = () => {
     submitJobApplication(jobId)
       .then(response => {
         if (response.success) {
-          // Mark job as applied
           const updatedJobs = filteredJobs.map(job => 
             job.id === jobId ? { ...job, applied: true } : job
           );
           setFilteredJobs(updatedJobs);
           
-          // Also update in original jobs
           const updatedOriginalJobs = originalJobs.map(job => 
             job.id === jobId ? { ...job, applied: true } : job
           );
           setOriginalJobs(updatedOriginalJobs);
           
-          // Add to applied jobs
           const appliedJob = filteredJobs.find(job => job.id === jobId);
           if (appliedJob) {
             setAppliedJobs(prev => [...prev, appliedJob]);
@@ -179,7 +164,6 @@ const JobPortal = () => {
   };
 
   const handleAutoApply = () => {
-    // Check if resume is uploaded
     if (!resumeUploaded) {
       toast({
         title: "Resume Required",
@@ -193,7 +177,6 @@ const JobPortal = () => {
     setAutoApplyStatus("running");
     setAutoApplyProgress(0);
     
-    // Get eligible jobs (LinkedIn Easy Apply only)
     const eligibleJobs = filteredJobs.filter(job => 
       job.linkedinEasyApply && !job.applied
     );
@@ -210,7 +193,6 @@ const JobPortal = () => {
       return;
     }
     
-    // Simulate applying to jobs one by one
     let applied = 0;
     let failed = 0;
     let processed = 0;
@@ -221,7 +203,6 @@ const JobPortal = () => {
         setAutoApplyStatus("completed");
         setAutoApplyProgress(100);
         
-        // Refresh job list to update applied status
         applyFilters();
         
         return;
@@ -230,19 +211,16 @@ const JobPortal = () => {
       const currentJob = eligibleJobs[processed];
       processed++;
       
-      // Simulate 85% success rate
       const isSuccess = Math.random() < 0.85;
       
       if (isSuccess) {
         applied++;
         
-        // Update job as applied
         const updatedJobs = originalJobs.map(job => 
           job.id === currentJob.id ? { ...job, applied: true } : job
         );
         setOriginalJobs(updatedJobs);
         
-        // Add to applied jobs
         setAppliedJobs(prev => [...prev, currentJob]);
       } else {
         failed++;
@@ -267,16 +245,14 @@ const JobPortal = () => {
       description: "This may take a moment...",
     });
     
-    // Simulate AI-powered job search
     setTimeout(() => {
-      // Get a random subset of jobs as "matching" jobs
-      const matchCount = Math.floor(Math.random() * 5) + 3; // 3-7 matches
+      const matchCount = Math.floor(Math.random() * 5) + 3;
       const matchingJobs = [...originalJobs]
         .sort(() => Math.random() - 0.5)
         .slice(0, matchCount)
         .map(job => ({
           ...job,
-          matched: Math.floor(Math.random() * 20) + 75, // 75-95% match
+          matched: Math.floor(Math.random() * 20) + 75,
           reasonsForMatch: [
             "Skills align with job requirements",
             "Experience level matches the role",
@@ -312,13 +288,11 @@ const JobPortal = () => {
       });
   };
 
-  // When switching to the recommendations tab, load AI recommendations
   useEffect(() => {
     if (activeTab === "recommended" && aiRecommendations.length === 0) {
       loadAIRecommendations();
     }
     
-    // Update applied jobs list when switching to applied tab
     if (activeTab === "applied") {
       const applied = originalJobs.filter(job => job.applied);
       setAppliedJobs(applied);
@@ -349,6 +323,29 @@ const JobPortal = () => {
     setEasyApplyOnly(false);
     setSalaryRange([70, 160]);
     setSelectedLocation("all");
+    setPrompt("");
+    
+    setIsLoading(true);
+    getJobRecommendations()
+      .then(jobs => {
+        setOriginalJobs(jobs);
+        setFilteredJobs(jobs);
+        setIsLoading(false);
+        
+        toast({
+          title: "Filters Reset",
+          description: "All filters have been cleared",
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching jobs:", error);
+        toast({
+          title: "Error resetting filters",
+          description: "Please try again",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      });
   };
   
   return (
@@ -371,7 +368,6 @@ const JobPortal = () => {
         
         <TabsContent value="search" className="animate-fade-in">
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Filters panel */}
             <JobFilterPanel 
               selectedLocation={selectedLocation}
               setSelectedLocation={setSelectedLocation}
@@ -393,9 +389,9 @@ const JobPortal = () => {
               handlePromptSearch={handlePromptSearch}
               isLoading={isLoading}
               isAutoApplyEnabled={isAutoApplyEnabled}
+              resetFilters={resetFilters}
             />
             
-            {/* Main job list */}
             <JobList 
               isLoading={isLoading}
               filteredJobs={filteredJobs}
@@ -428,7 +424,6 @@ const JobPortal = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Auto-Apply Modal */}
       <AutoApplyModal 
         showModal={showAutoApplyModal}
         setShowModal={setShowAutoApplyModal}

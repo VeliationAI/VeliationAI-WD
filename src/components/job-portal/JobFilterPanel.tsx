@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { 
   Filter, Search, Zap, Upload, CheckCircle2 as CheckCircle,
-  Globe, IndianRupee, DollarSign, Sparkles, Loader2
+  Globe, IndianRupee, DollarSign, Sparkles, Loader2, RefreshCw
 } from "lucide-react";
 
 // Define job location types
@@ -64,6 +64,7 @@ interface JobFilterPanelProps {
   handlePromptSearch: () => void;
   isLoading: boolean;
   isAutoApplyEnabled: boolean;
+  resetFilters: () => void;
 }
 
 const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
@@ -87,6 +88,7 @@ const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   handlePromptSearch,
   isLoading,
   isAutoApplyEnabled,
+  resetFilters,
 }) => {
   const { toast } = useToast();
 
@@ -107,9 +109,20 @@ const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   return (
     <div className="w-full md:w-1/4 space-y-6">
       <div className="p-4 border rounded-lg bg-background/60">
-        <h3 className="font-medium mb-4 flex items-center">
-          <Filter className="h-4 w-4 mr-2" /> Filters
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-medium flex items-center">
+            <Filter className="h-4 w-4 mr-2" /> Filters
+          </h3>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={resetFilters}
+            className="text-sm hover:bg-destructive/10 hover:text-destructive"
+          >
+            <RefreshCw className="h-3 w-3 mr-1" /> Reset
+          </Button>
+        </div>
         
         <div className="space-y-5">
           <div className="space-y-2">

@@ -1,11 +1,22 @@
-
 export const generateResumePDF = (resumeContent: string): Blob => {
   // In a real application, this would use a library like jsPDF or PDF.js
   // For this implementation, we're creating a text blob as PDF
   // This is a simplified implementation
   
-  // Create a PDF-like blob with proper formatting
+  // Improved PDF generation with better structure and formatting
   const pdfHeader = '%PDF-1.4\n';
+  
+  // Parse content into sections
+  const sections = parseResumeContent(resumeContent);
+  
+  // Generate structured content with proper spacing
+  let formattedContent = '';
+  Object.entries(sections).forEach(([title, content]) => {
+    formattedContent += `\\n\\n${title.toUpperCase()}\\n`;
+    formattedContent += `${'='.repeat(title.length)}\\n`;
+    formattedContent += `${content.replace(/\n/g, '\\n')}\\n`;
+  });
+  
   const pdfContent = `
 1 0 obj
 <<
@@ -27,51 +38,120 @@ endobj
 /Resources <<
 /Font <<
 /F1 4 0 R
+/F2 5 0 R
 >>
 >>
 /MediaBox [0 0 612 792]
-/Contents 5 0 R
+/Contents 6 0 R
 >>
 endobj
 4 0 obj
 <<
 /Type /Font
 /Subtype /Type1
-/BaseFont /Helvetica
+/BaseFont /Helvetica-Bold
 >>
 endobj
 5 0 obj
 <<
-/Length 68
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 1024
 >>
 stream
 BT
-/F1 12 Tf
+/F2 10 Tf
 72 720 Td
-(${resumeContent.replace(/\n/g, '\\n')}) Tj
+(${formattedContent}) Tj
 ET
 endstream
 endobj
 xref
-0 6
+0 7
 0000000000 65535 f
 0000000009 00000 n
 0000000058 00000 n
 0000000115 00000 n
 0000000234 00000 n
 0000000302 00000 n
+0000000370 00000 n
 trailer
 <<
-/Size 6
+/Size 7
 /Root 1 0 R
 >>
 startxref
-421
+1446
 %%EOF
   `;
   
   const blob = new Blob([pdfHeader + pdfContent], { type: 'application/pdf' });
   return blob;
+};
+
+// Helper function to parse resume content into structured sections
+const parseResumeContent = (content: string): Record<string, string> => {
+  // Default structure for a resume
+  const sections: Record<string, string> = {
+    'contact information': '',
+    'summary': '',
+    'experience': '',
+    'education': '',
+    'skills': '',
+    'projects': '',
+    'certifications': '',
+  };
+  
+  // Try to identify sections in the content
+  let currentSection = 'summary'; // Default section if no headers found
+  
+  const lines = content.split('\n');
+  
+  lines.forEach(line => {
+    // Check if line might be a section header (all caps, short, etc.)
+    const isPossibleHeader = line.trim().length < 30 && 
+                            (line === line.toUpperCase() || 
+                             line.endsWith(':') ||
+                             line.startsWith('#'));
+    
+    if (isPossibleHeader) {
+      // Normalize the header text
+      const headerText = line.toLowerCase()
+                            .replace(/[:#]/g, '')
+                            .trim();
+      
+      // Check if this matches any of our predefined sections
+      for (const section of Object.keys(sections)) {
+        if (headerText.includes(section) || section.includes(headerText)) {
+          currentSection = section;
+          return;
+        }
+      }
+      
+      // If no match, but seems like a header, create a new section
+      if (line.trim().length > 0) {
+        sections[headerText] = '';
+        currentSection = headerText;
+      }
+    } else if (line.trim() && currentSection) {
+      // Add content to current section
+      sections[currentSection] += (sections[currentSection] ? '\n' : '') + line;
+    }
+  });
+  
+  // Remove empty sections
+  Object.keys(sections).forEach(key => {
+    if (!sections[key]) {
+      delete sections[key];
+    }
+  });
+  
+  return sections;
 };
 
 export const downloadResume = (resumeContent: string, filename = 'resume.pdf') => {
@@ -91,6 +171,18 @@ export const downloadResume = (resumeContent: string, filename = 'resume.pdf') =
   }, 100);
   
   return { success: true, message: "Resume downloaded successfully" };
+};
+
+// Preview resume function to validate formatting before download
+export const previewResume = (resumeContent: string): string => {
+  // Generate PDF blob
+  const blob = generateResumePDF(resumeContent);
+  
+  // Create a URL for the PDF
+  const url = URL.createObjectURL(blob);
+  
+  // Return URL that can be used in an iframe or object tag
+  return url;
 };
 
 // ATS score prediction simulation

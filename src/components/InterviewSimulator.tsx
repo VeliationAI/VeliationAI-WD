@@ -69,14 +69,15 @@ const InterviewSimulator: React.FC = () => {
   const [categoryScores, setCategoryScores] = useState<{[key: string]: number}>({});
   const [interviewSetup, setInterviewSetup] = useState(true);
   const [difficulty, setDifficulty] = useState("medium");
-  
+  const [interviewQuestions, setInterviewQuestions] = useState<QuestionType[]>([]);
+
   useEffect(() => {
-    if (isInterviewStarted && !activeQuestion) {
-      setActiveQuestion(sampleQuestions[currentQuestionIndex]);
-      initializeTimer(sampleQuestions[currentQuestionIndex]);
+    if (isInterviewStarted && !activeQuestion && interviewQuestions.length > 0) {
+      setActiveQuestion(interviewQuestions[currentQuestionIndex]);
+      initializeTimer(interviewQuestions[currentQuestionIndex]);
     }
-  }, [isInterviewStarted, activeQuestion, currentQuestionIndex]);
-  
+  }, [isInterviewStarted, activeQuestion, currentQuestionIndex, interviewQuestions]);
+
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     
@@ -88,28 +89,92 @@ const InterviewSimulator: React.FC = () => {
     
     return () => clearInterval(timer);
   }, [isAnswering, timeRemaining, isPaused]);
-  
+
   const initializeTimer = (question: QuestionType) => {
     const minutes = parseInt(question.expectedTime.split(" ")[0], 10);
     setTimeRemaining(minutes * 60);
   };
-  
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-  
+
+  const getRandomizedQuestions = (domain: string, type: string, difficulty: string) => {
+    let filteredQuestions = [...sampleQuestions];
+
+    if (domain) {
+      const categoryMap: Record<string, string[]> = {
+        "software": ["Algorithms", "System Design"],
+        "data": ["Algorithms", "Data Science"],
+        "backend": ["System Design", "Algorithms", "Backend"],
+        "frontend": ["Frontend", "JavaScript", "React"],
+        "analytics": ["Data Science", "SQL", "Algorithms"],
+        "product": ["Behavioral", "Product Management"],
+      };
+
+      const relevantCategories = categoryMap[domain] || [];
+
+      if (relevantCategories.length > 0) {
+        filteredQuestions = filteredQuestions.filter(q => 
+          relevantCategories.includes(q.category)
+        );
+      }
+    }
+
+    if (difficulty) {
+      const difficultyMap: Record<string, string> = {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      };
+
+      if (difficultyMap[difficulty]) {
+        filteredQuestions = filteredQuestions.filter(q => 
+          q.difficulty === difficultyMap[difficulty]
+        );
+      }
+    }
+
+    if (type) {
+      const typeMap: Record<string, string[]> = {
+        "questions": ["Conceptual", "Knowledge", "Theoretical"],
+        "coding": ["Code", "Algorithm", "Implementation"],
+        "voice": ["Explanation", "Verbal", "Conceptual"],
+        "scenario": ["Scenario", "Case Study", "Problem Solving"],
+      };
+
+      const relevantTypes = typeMap[type] || [];
+
+      if (relevantTypes.length > 0) {
+        filteredQuestions = filteredQuestions.filter(q => 
+          relevantTypes.some(t => q.question.toLowerCase().includes(t.toLowerCase()))
+        );
+      }
+    }
+
+    if (filteredQuestions.length === 0) {
+      filteredQuestions = sampleQuestions;
+    }
+
+    filteredQuestions.sort(() => Math.random() - 0.5);
+
+    const count = Math.min(Math.floor(Math.random() * 3) + 5, filteredQuestions.length);
+    return filteredQuestions.slice(0, count);
+  };
+
   const startInterview = () => {
-    // In a real application, we would filter questions based on domain and type
+    const randomizedQuestions = getRandomizedQuestions(selectedDomain, selectedType, difficulty);
+    setInterviewQuestions(randomizedQuestions);
+
     setInterviewSetup(false);
     setIsInterviewStarted(true);
     setIsAnswering(true);
   };
-  
+
   const toggleVoiceMode = () => {
     if (!isVoiceMode && selectedType === "voice") {
-      // Request microphone access when enabling voice mode
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
           setIsVoiceMode(true);
@@ -130,30 +195,25 @@ const InterviewSimulator: React.FC = () => {
       setIsVoiceMode(prev => !prev);
     }
   };
-  
+
   const toggleRecording = () => {
     if (isRecording) {
-      // Stop recording
       setIsRecording(false);
-      // In a real app, this would process audio and convert to text
       setTimeout(() => {
         setAnswer(prev => prev + " [Voice transcription would appear here in a real implementation]");
       }, 1000);
     } else {
-      // Start recording
       setIsRecording(true);
     }
   };
-  
+
   const submitAnswer = () => {
     if (!answer.trim() || !activeQuestion) return;
     
     setIsLoading(true);
     
-    // Use our interview service
     generateInterviewFeedback(activeQuestion, answer)
       .then(feedbackResult => {
-        // Enhance feedback with additional metrics based on our HLD
         const enhancedFeedback: FeedbackType = {
           ...feedbackResult,
           codeQuality: Math.floor(Math.random() * 20) + 75,
@@ -170,7 +230,6 @@ const InterviewSimulator: React.FC = () => {
         setIsLoading(false);
         setIsAnswering(false);
         
-        // Track scores for final result
         setCategoryScores(prev => ({
           ...prev,
           [activeQuestion.category]: enhancedFeedback.score
@@ -186,23 +245,22 @@ const InterviewSimulator: React.FC = () => {
         setIsLoading(false);
       });
   };
-  
+
   const nextQuestion = () => {
-    if (currentQuestionIndex < sampleQuestions.length - 1) {
+    if (currentQuestionIndex < interviewQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
       setActiveQuestion(null);
       setAnswer("");
       setFeedback(null);
       setIsAnswering(true);
     } else {
-      // Calculate overall score
       const scores = Object.values(categoryScores);
       const overall = scores.reduce((sum, score) => sum + score, 0) / scores.length;
       setOverallScore(Math.round(overall));
       setInterviewComplete(true);
     }
   };
-  
+
   const restartInterview = () => {
     setCurrentQuestionIndex(0);
     setActiveQuestion(null);
@@ -215,11 +273,11 @@ const InterviewSimulator: React.FC = () => {
     setCategoryScores({});
     setOverallScore(null);
   };
-  
+
   const togglePause = () => {
     setIsPaused(prev => !prev);
   };
-  
+
   if (interviewSetup) {
     return (
       <Card className="glass-card max-w-3xl mx-auto p-8 animate-fade-in">
@@ -311,7 +369,7 @@ const InterviewSimulator: React.FC = () => {
       </Card>
     );
   }
-  
+
   if (!isInterviewStarted) {
     return (
       <Card className="glass-card max-w-3xl mx-auto p-8 animate-fade-in">
@@ -347,7 +405,7 @@ const InterviewSimulator: React.FC = () => {
       </Card>
     );
   }
-  
+
   if (interviewComplete) {
     return (
       <Card className="glass-card max-w-3xl mx-auto p-8 animate-fade-in">
@@ -446,15 +504,15 @@ const InterviewSimulator: React.FC = () => {
       </Card>
     );
   }
-  
+
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <span className="text-sm font-medium text-muted-foreground mr-3">
-            Question {currentQuestionIndex + 1}/{sampleQuestions.length}
+            Question {currentQuestionIndex + 1}/{interviewQuestions.length}
           </span>
-          <Progress value={(currentQuestionIndex / sampleQuestions.length) * 100} className="h-2 w-32" />
+          <Progress value={(currentQuestionIndex / interviewQuestions.length) * 100} className="h-2 w-32" />
         </div>
         
         {selectedType === "voice" && (
@@ -653,7 +711,7 @@ const InterviewSimulator: React.FC = () => {
           </Card>
           <div className="flex justify-end">
             <Button onClick={nextQuestion}>
-              {currentQuestionIndex < sampleQuestions.length - 1 ? 'Next Question' : 'Complete Interview'}
+              {currentQuestionIndex < interviewQuestions.length - 1 ? 'Next Question' : 'Complete Interview'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
