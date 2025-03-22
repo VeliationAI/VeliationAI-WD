@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { 
   Filter, Search, Zap, Upload, CheckCircle2 as CheckCircle,
-  Globe, IndianRupee, DollarSign, Sparkles
+  Globe, IndianRupee, DollarSign, Sparkles, Loader2
 } from "lucide-react";
 
 // Define job location types
