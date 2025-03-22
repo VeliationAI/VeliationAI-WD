@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, ChevronDown, Briefcase, User } from "lucide-react";
+import { Menu, X, ChevronDown, Briefcase, User, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
