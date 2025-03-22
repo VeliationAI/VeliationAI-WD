@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { sampleQuestions, QuestionType } from "@/lib/interview-data";
 import { Card } from "@/components/ui/card";
-import Button from "@/components/Button";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowRight, CheckCircle, Clock, BarChart, Send, Pause, Play, 
   RefreshCw, Mic, Code, FileQuestion, BriefcaseIcon, Brain, 
-  Server, Database, LineChart, Layers, PanelLeft
+  Server, Database, LineChart, Layers
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
