@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Button from "@/components/Button";
@@ -35,6 +36,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { downloadResume } from "@/utils/pdfUtils";
+import { useToast } from "@/hooks/use-toast";
 
 // Form schema
 const resumeFormSchema = z.object({
@@ -53,6 +55,7 @@ const ResumeGenerator: React.FC = () => {
   const [analysisStatus, setAnalysisStatus] = useState<"idle" | "analyzing" | "completed" | "error">("idle");
   const [resumeContent, setResumeContent] = useState<string | null>(null);
   const [atsScore, setAtsScore] = useState<number | null>(null);
+  const { toast } = useToast();
 
   // Resume form
   const form = useForm<ResumeFormValues>({
