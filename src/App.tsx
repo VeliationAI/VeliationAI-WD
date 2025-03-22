@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./context/AuthContext";
 import Index from "./pages/Index";
-import Features from "./pages/Features";
 import Interview from "./pages/Interview";
 import ETLDesigner from "./pages/ETLDesigner";
 import Subscription from "./pages/Subscription";
@@ -31,7 +30,6 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/features" element={<Features />} />
               <Route path="/auth/signup" element={<SignUp />} />
               <Route path="/auth/signin" element={<SignIn />} />
               
@@ -41,11 +39,11 @@ const App = () => (
                   <Interview />
                 </ProtectedRoute>
               } />
-              <Route path="/etl-designer" element={
+              {/* <Route path="/etl-designer" element={
                 <ProtectedRoute>
                   <ETLDesigner />
                 </ProtectedRoute>
-              } />
+              } /> */}
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/job-search" element={
                 <ProtectedRoute>

@@ -26,10 +26,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Features", href: "/features" },
     { name: "Interview", href: "/interview" },
     { name: "Job Search", href: "/job-search" },
-    { name: "ETL Designer", href: "/etl-designer" },
     { name: "Subscription", href: "/subscription" },
   ];
 
