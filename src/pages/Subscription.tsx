@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import SubscriptionCheckout from "@/components/checkout/SubscriptionCheckout";
+import { useAuth } from "@/context/AuthContext";
 
 interface PlanFeature {
   title: string;
@@ -33,8 +35,10 @@ interface BillingOption {
 
 const Subscription = () => {
   const navigate = useNavigate();
+  const { user, subscription: userSubscription } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<string>("monthly");
+  const [showCheckout, setShowCheckout] = useState(false);
   
   const billingOptions: BillingOption[] = [
     { id: "monthly", name: "Monthly", discount: 0 },
@@ -72,6 +76,7 @@ const Subscription = () => {
   
   const handleSelectPlan = (plan: string) => {
     setSelectedPlan(plan);
+    setShowCheckout(false);
     toast.success(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected`);
   };
   
@@ -80,8 +85,14 @@ const Subscription = () => {
       toast.error("Please select a plan first");
       return;
     }
-    toast.success(`Subscribed to ${selectedPlan} plan with ${billingCycle} billing cycle`);
-    navigate("/interview");
+    
+    if (!user) {
+      toast.info("Please sign in to subscribe");
+      navigate("/auth/signin", { state: { from: "/subscription" } });
+      return;
+    }
+    
+    setShowCheckout(true);
   };
   
   const FeatureCheck = ({ available }: { available: boolean }) => (
@@ -99,6 +110,14 @@ const Subscription = () => {
       default: return null;
     }
   };
+
+  useEffect(() => {
+    if (userSubscription) {
+      // If user already has a subscription, pre-select their plan
+      setSelectedPlan(userSubscription.plan);
+      setBillingCycle(userSubscription.billing_cycle);
+    }
+  }, [userSubscription]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -263,7 +282,7 @@ const Subscription = () => {
           </Card>
         </div>
         
-        {selectedPlan && (
+        {selectedPlan && !showCheckout && (
           <div className="max-w-2xl mx-auto">
             <Card className="p-8 glass-card">
               <h3 className="text-2xl font-bold mb-6">Complete Your Subscription</h3>
@@ -299,13 +318,23 @@ const Subscription = () => {
                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               >
                 <CreditCardIcon className="mr-2 h-4 w-4" />
-                Subscribe Now
+                {user ? 'Subscribe Now' : 'Sign In to Subscribe'}
               </Button>
               
               <p className="text-sm text-muted-foreground text-center mt-4">
                 Your subscription includes a 7-day free trial. Cancel anytime.
               </p>
             </Card>
+          </div>
+        )}
+
+        {selectedPlan && showCheckout && (
+          <div className="max-w-2xl mx-auto">
+            <SubscriptionCheckout 
+              selectedPlan={selectedPlan} 
+              billingCycle={billingCycle} 
+              amount={calculatePrice(planPricing[selectedPlan as keyof typeof planPricing])} 
+            />
           </div>
         )}
       </section>

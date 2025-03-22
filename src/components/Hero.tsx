@@ -3,8 +3,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Clock, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const Hero = () => {
+  const { user } = useAuth();
+
   return (
     <section className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4">
@@ -27,7 +30,9 @@ const Hero = () => {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/interview">Try For Free</Link>
+                <Link to={user ? "/interview" : "/auth/signup"}>
+                  {user ? "Try Now" : "Sign Up Free"}
+                </Link>
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12">
@@ -83,7 +88,9 @@ const Hero = () => {
                       </div>
                     </div>
                     <Button className="w-full mt-6" asChild>
-                      <Link to="/subscription">Get Started</Link>
+                      <Link to={user ? "/subscription" : "/auth/signup"}>
+                        {user ? "Upgrade Now" : "Get Started"}
+                      </Link>
                     </Button>
                   </div>
                 </div>
