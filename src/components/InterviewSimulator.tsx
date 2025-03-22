@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { sampleQuestions, QuestionType } from "@/lib/interview-data";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/Button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  ArrowRight, CheckCircle, Clock, BarChart, Send, Pause, Play, 
+  ArrowRight, CheckCircle2, Clock, BarChart, Send, Pause, Play, 
   RefreshCw, Mic, Code, FileQuestion, BriefcaseIcon, Brain, 
   Server, Database, LineChart, Layers
 } from "lucide-react";
@@ -327,15 +326,15 @@ const InterviewSimulator: React.FC = () => {
             <h3 className="font-semibold mb-2">Interview Format:</h3>
             <ul className="text-left space-y-2">
               <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
                 <span>{sampleQuestions.length} technical questions of varying difficulty</span>
               </li>
               <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
                 <span>Each question has a recommended time limit</span>
               </li>
               <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
                 <span>You'll receive AI-generated feedback after each response</span>
               </li>
             </ul>
@@ -437,8 +436,10 @@ const InterviewSimulator: React.FC = () => {
             <Button onClick={restartInterview} variant="secondary">
               <RefreshCw className="mr-2 h-4 w-4" /> Restart Interview
             </Button>
-            <Button href="/">
-              Finish <ArrowRight className="ml-2 h-4 w-4" />
+            <Button asChild>
+              <a href="/">
+                Finish <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
             </Button>
           </div>
         </div>
@@ -581,7 +582,7 @@ const InterviewSimulator: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-medium mb-2 text-green-600 flex items-center">
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
                   Strengths
                 </h4>
                 <ul className="space-y-2">
